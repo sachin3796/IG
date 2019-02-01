@@ -12,6 +12,7 @@
 		9950147C2204EC8D0058D0B1 /* cURL_CB.c in Sources */ = {isa = PBXBuildFile; fileRef = 995014732204EC8D0058D0B1 /* cURL_CB.c */; };
 		9950147D2204EC8D0058D0B1 /* connect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 995014752204EC8D0058D0B1 /* connect.cpp */; };
 		9950147E2204EC8D0058D0B1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 995014762204EC8D0058D0B1 /* main.cpp */; };
+		995014812204ED3A0058D0B1 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 995014802204ED3A0058D0B1 /* libcurl.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,6 +43,7 @@
 		995014762204EC8D0058D0B1 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		995014782204EC8D0058D0B1 /* config_demo.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config_demo.txt; sourceTree = "<group>"; };
 		995014792204EC8D0058D0B1 /* config_example.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config_example.txt; sourceTree = "<group>"; };
+		995014802204ED3A0058D0B1 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				995014812204ED3A0058D0B1 /* libcurl.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +63,7 @@
 			children = (
 				9950145D2204EC6C0058D0B1 /* IG */,
 				9950145C2204EC6C0058D0B1 /* Products */,
+				9950147F2204ED390058D0B1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -146,6 +150,14 @@
 				995014792204EC8D0058D0B1 /* config_example.txt */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		9950147F2204ED390058D0B1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				995014802204ED3A0058D0B1 /* libcurl.tbd */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
