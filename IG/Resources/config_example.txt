@@ -1,0 +1,5 @@
+username   YOUR_USERNAME
+password   YOUR_PASSWORD
+api_key    YOUR_API_KEY
+acc_type   YOUR_ACCOUNT_TYPE
+acc_number YOUR_ACCOUNT_NUMBER
