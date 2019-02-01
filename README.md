@@ -29,3 +29,29 @@ cJSON does not require linkage to a library as the single .h and .c file has bee
 
 To use the project, set the text files to their appropriate values as shown in the config_example.txt file,
 and read it into the `unique_ptr` in main.cpp.
+
+## *-- Communication --*
+
+The IG Labs API requires some information to set the POST request:
+-> Login Credentials (Username and Password)
+-> API Key (40 character string)
+-> An Account type (Either "LIVE" or "DEMO"
+
+A structure has been defined to store this information:
+```
+struct IGAuth {
+    const char * API_Key; /* The API Key for IG labs */
+    struct {
+        const char * username;
+        const char * password;
+    } login; /* Login credentials for my IG account */
+    struct {
+        const char * type;
+        const char * number;
+    } acc; /* Account Information */
+};
+typedef struct IGAuth IGAuth;
+```
+
+Using the cURL and cJSON libraries, an interface for this data can communicate directly to the API, which then returns a
+`cJSON *` object containing the server's response.
