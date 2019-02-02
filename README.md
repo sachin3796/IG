@@ -35,18 +35,18 @@ and read it into the `unique_ptr` in main.cpp.
 The IG Labs API requires some information to set the POST request:
 -> Login Credentials (Username and Password)
 -> API Key (40 character string)
--> An Account type (Either "LIVE" or "DEMO"
+-> An Account type (Either "LIVE" or "DEMO" - 4 character string)
 
 A structure has been defined to store this information:
 ```
 struct IGAuth {
-    const char * API_Key; /* The API Key for IG labs */
+    const char API_Key[41]; /* The API Key for IG labs */
     struct {
         const char * username;
         const char * password;
     } login; /* Login credentials for my IG account */
     struct {
-        const char * type;
+        const char type[5];
         const char * number;
     } acc; /* Account Information */
 };
