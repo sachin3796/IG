@@ -31,8 +31,6 @@ namespace IG {
         const IGAuth * const igPtr;
         /* cURL API Objects */
         CURL * curl;
-        MemoryBlock * return_data;
-        curl_slist * hd_rest;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
@@ -41,12 +39,12 @@ namespace IG {
         std::string CST;
         std::string XST;
         /* Class Functions */
-        void process_data (void);
+        void process_data (MemoryBlock * &mb);
         /* Set-up Functions */
-        const char * const J_body_parse (void);
+        char * const J_body_parse (void);
         curl_slist * const set_headers (void);
         void set_curl_options (void);
-        RET_CODE cleanup_request (void);
+        RET_CODE cleanup_request (MemoryBlock * &mb);
         typedef const char CC;
         typedef std::string stdstr;
     protected:

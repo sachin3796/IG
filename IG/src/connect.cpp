@@ -15,11 +15,9 @@ namespace IG {
     
     IGConnect :: IGConnect (const char * const fn) :
     igPtr        (init_igPtr (fn)),
-    return_data  (init_memory ()),
     content_type ("application/json"),
     accept       ("application/json; charset=UTF-8"),
     curl         (nullptr),
-    hd_rest      (nullptr),
     post_return  (nullptr) {
         std::string acc_type = igPtr->acc.type;
         if (acc_type == "DEMO") base_url = "https://demo-api.ig.com/gateway/deal/";
@@ -33,19 +31,18 @@ namespace IG {
         if ((curl = curl_easy_init ()) == nullptr) return;
         /* Set LibCurl options */
         set_curl_options ();
-        if (curl_easy_perform (curl) != CURLE_OK) {
-            std::cout << "An error occured with data retrieval." << std::endl;
-        } else process_data ();
     }
     
-    void IGConnect :: process_data (void) {
-        switch (cleanup_request ()) {
+    void IGConnect :: process_data (MemoryBlock * &mb) {
+        switch (cleanup_request (mb)) {
             case RET_CODE::FAIL_ALL: {
                 std::cout << "Parsing and Reallocation of received data failed." << std::endl;
+                /* Free memory quickly */
             } case RET_CODE::FAIL_RETURN: {
                 std::cout << "Parsing of received data failed." << std::endl;
             } case RET_CODE::FAIL_REALLOC: {
                 std::cout << "Reallocation of memory block failed." << std::endl;
+                /* Free memory quickly */
             } case RET_CODE::SUCCESS: {
                 std::cout << "Successfully received data." << std::endl;
                 std::cout << JSON::cJSON_Print (post_return) << std::endl;
@@ -55,15 +52,13 @@ namespace IG {
     
     IGConnect :: ~IGConnect (void) {
         /* Cleanup for C objects */
-        curl_slist_free_all (hd_rest);
         curl_easy_cleanup (curl);
         curl_global_cleanup ();
         JSON::cJSON_Delete (post_return);
-        free_memory (return_data);
         free_igPtr (igPtr);
     }
     
-    const char * const IGConnect :: J_body_parse (void) {
+    char * const IGConnect :: J_body_parse (void) {
         /* Build a JSON object and parse it as a string */
         char * str = nullptr;
         JSON::cJSON * json = JSON::cJSON_CreateObject ();
@@ -85,33 +80,42 @@ namespace IG {
     }
     
     void IGConnect :: set_curl_options (void) {
+        curl_slist * hd_rest = set_headers ();
+        char * json_postfields = J_body_parse ();
+        MemoryBlock * return_data = init_memory ();
+        
+        auto get_url = [url=base_url] (CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
 #if (DEBUG == 1)
         curl_easy_setopt (curl, CURLOPT_VERBOSE, true);
         curl_easy_setopt (curl, CURLOPT_POST, true);
 #endif
-        auto get_url = [url=base_url] (CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
         curl_easy_setopt (curl, CURLOPT_URL, get_url ("session"));
-        
-        curl_easy_setopt (curl, CURLOPT_HTTPHEADER, hd_rest = set_headers ());
-        
-        curl_easy_setopt (curl, CURLOPT_POSTFIELDS, J_body_parse ());
+        curl_easy_setopt (curl, CURLOPT_HTTPHEADER, hd_rest);
+        curl_easy_setopt (curl, CURLOPT_POSTFIELDS, json_postfields);
         curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, curl_callback);
         curl_easy_setopt (curl, CURLOPT_WRITEDATA, return_data);
+        
+        if (curl_easy_perform (curl) != CURLE_OK) {
+            std::cout << "An error occured with data retrieval." << std::endl;
+        } else process_data (return_data);
+        free_memory (return_data);
+        JSON::cJSON_free (json_postfields);
+        curl_slist_free_all (hd_rest);
     }
     
-    RET_CODE IGConnect :: cleanup_request (void) {
-        if ((post_return = JSON::cJSON_Parse (return_data->memory)) == nullptr) {
-            if ((return_data->memory = (char *) std::realloc (return_data->memory, 1)) == nullptr) {
+    RET_CODE IGConnect :: cleanup_request (MemoryBlock * &mb) {
+        if ((post_return = JSON::cJSON_Parse (mb->memory)) == nullptr) {
+            if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
                 return RET_CODE::FAIL_ALL;
             } else {
-                return_data->memory = nullptr;
+                mb->memory = nullptr;
                 return RET_CODE::FAIL_RETURN;
             }
-        } else if ((return_data->memory = (char *) std::realloc (return_data->memory, 1)) == nullptr) {
+        } else if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
             return RET_CODE::FAIL_REALLOC;
         } else {
-            return_data->memory = nullptr;
-            return_data->size = 0;
+            mb->memory = nullptr;
+            mb->size = 0;
             return RET_CODE::SUCCESS;
         }
     }
