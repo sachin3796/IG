@@ -24,13 +24,13 @@ enum FLAGS {
 typedef enum FLAGS FLAGS;
 
 struct IGAuth {
-    const char * API_Key; /* The API Key for IG labs */
+    const char API_Key[41]; /* The API Key for IG labs */
     struct {
         const char * username;
         const char * password;
     } login; /* Login credentials for my IG account */
     struct {
-        const char * type;
+        const char type[5];
         const char * number;
     } acc; /* Account Information */
 };

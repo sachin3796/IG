@@ -39,22 +39,16 @@ struct IGAuth * file2ig (struct IGAuth * ig_ptr, const char * fn) {
     ig_ptr                 = (struct IGAuth *) malloc (sizeof (struct IGAuth));
     ig_ptr->login.username = (const char *)    malloc (strlen ( buff[0] ) + 1);
     ig_ptr->login.password = (const char *)    malloc (strlen ( buff[1] ) + 1);
-    ig_ptr->API_Key        = (const char *)    malloc (strlen ( buff[2] ) + 1);
-    ig_ptr->acc.type       = (const char *)    malloc (strlen ( buff[3] ) + 1);
     ig_ptr->acc.number     = (const char *)    malloc (strlen ( buff[4] ) + 1);
     i = 0; /* Use as a bit-flag checker */
     if (ig_ptr                 == NULL) i |= FLAG_0;
     if (ig_ptr->login.username == NULL) i |= FLAG_1;
     if (ig_ptr->login.password == NULL) i |= FLAG_2;
-    if (ig_ptr->API_Key        == NULL) i |= FLAG_3;
-    if (ig_ptr->acc.type       == NULL) i |= FLAG_4;
     if (ig_ptr->acc.number     == NULL) i |= FLAG_5;
     /* If struct was not allocated properly free memory. */
     if (i != 0) {
         i = ~i; /* Invert bits */
         if (i & FLAG_5) free ((char *) ig_ptr->acc.number);
-        if (i & FLAG_4) free ((char *) ig_ptr->acc.type);
-        if (i & FLAG_3) free ((char *) ig_ptr->API_Key);
         if (i & FLAG_2) free ((char *) ig_ptr->login.password);
         if (i & FLAG_1) free ((char *) ig_ptr->login.username);
         if (i & FLAG_0) free ((struct IGAuth *) ig_ptr);
@@ -72,9 +66,7 @@ struct IGAuth * file2ig (struct IGAuth * ig_ptr, const char * fn) {
 void free_igPtr (const struct IGAuth * ig_ptr) {
     /* Deallocate memory. */
     free ((char *) ig_ptr->acc.number);
-    free ((char *) ig_ptr->acc.type);
     free ((char *) ig_ptr->login.password);
     free ((char *) ig_ptr->login.username);
-    free ((char *) ig_ptr->API_Key);
     free ((struct IGAuth *) ig_ptr);
 }
