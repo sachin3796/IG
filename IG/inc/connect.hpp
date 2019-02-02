@@ -10,10 +10,13 @@
 #define connect_hpp
 
 #include <string>
+#include <memory>
 
 #include "IG.hpp"
 #include "cURL.hpp"
 #include "cJSON.hpp"
+
+#define tmplt(T) T, void(*)(T *)
 
 namespace IG {
     
@@ -28,14 +31,15 @@ namespace IG {
     class IGConnect {
     private:
         /* IG Data Structure */
-        const IGAuth * const igPtr;
+        std::unique_ptr<tmplt(const IGAuth)> igPtr;
         /* cURL API Objects */
-        CURL * curl;
+        std::unique_ptr<tmplt(CURL)> curl;
+        /* cJSON API Objects */
+        std::unique_ptr<tmplt(JSON::cJSON)> post_return;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
         const char * const accept;
-        JSON::cJSON * post_return;
         std::string CST;
         std::string XST;
         /* Class Functions */

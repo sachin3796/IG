@@ -14,11 +14,12 @@
 namespace IG {
     
     IGConnect :: IGConnect (const char * const fn) :
-    igPtr        (init_igPtr (fn)),
+    igPtr        (init_igPtr (fn), &free_igPtr),
     content_type ("application/json"),
     accept       ("application/json; charset=UTF-8"),
-    curl         (nullptr),
-    post_return  (nullptr) {
+    curl         (create_curl (), &destroy_curl),
+    post_return  (nullptr, &JSON::cJSON_Delete)
+    {
         std::string acc_type = igPtr->acc.type;
         if (acc_type == "DEMO") base_url = "https://demo-api.ig.com/gateway/deal/";
         else if (acc_type == "LIVE") base_url = "https://api.ig.com/gateway/deal/";
@@ -27,10 +28,9 @@ namespace IG {
             return;
         }
         /* Initialise a libcurl object */
-        curl_global_init (CURL_GLOBAL_ALL);
-        if ((curl = curl_easy_init ()) == nullptr) return;
+        curl.reset (curl_easy_init ());
         /* Set LibCurl options */
-        set_curl_options ();
+        if (curl.get () != nullptr) set_curl_options ();
     }
     
     void IGConnect :: process_data (MemoryBlock * &mb) {
@@ -45,18 +45,12 @@ namespace IG {
                 /* Free memory quickly */
             } case RET_CODE::SUCCESS: {
                 std::cout << "Successfully received data." << std::endl;
-                std::cout << JSON::cJSON_Print (post_return) << std::endl;
+                std::cout << JSON::cJSON_Print (post_return.get ()) << std::endl;
             }
         }
     }
     
-    IGConnect :: ~IGConnect (void) {
-        /* Cleanup for C objects */
-        curl_easy_cleanup (curl);
-        curl_global_cleanup ();
-        JSON::cJSON_Delete (post_return);
-        free_igPtr (igPtr);
-    }
+    IGConnect :: ~IGConnect (void) { }
     
     char * const IGConnect :: J_body_parse (void) {
         /* Build a JSON object and parse it as a string */
@@ -80,31 +74,33 @@ namespace IG {
     }
     
     void IGConnect :: set_curl_options (void) {
-        curl_slist * hd_rest = set_headers ();
-        char * json_postfields = J_body_parse ();
+        std::unique_ptr<tmplt(curl_slist)> hd_rest (set_headers (), &curl_slist_free_all);
+        std::unique_ptr<tmplt(void)> json_postfields (J_body_parse (), &JSON::cJSON_free);
         MemoryBlock * return_data = init_memory ();
+//        std::unique_ptr<tmplt(MemoryBlock)> return_data (init_memory (), &free_memory);
         
         auto get_url = [url=base_url] (CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
 #if (DEBUG == 1)
-        curl_easy_setopt (curl, CURLOPT_VERBOSE, true);
-        curl_easy_setopt (curl, CURLOPT_POST, true);
+        curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, true);
+        curl_easy_setopt (curl.get (), CURLOPT_POST, true);
 #endif
-        curl_easy_setopt (curl, CURLOPT_URL, get_url ("session"));
-        curl_easy_setopt (curl, CURLOPT_HTTPHEADER, hd_rest);
-        curl_easy_setopt (curl, CURLOPT_POSTFIELDS, json_postfields);
-        curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, curl_callback);
-        curl_easy_setopt (curl, CURLOPT_WRITEDATA, return_data);
+        curl_easy_setopt (curl.get (), CURLOPT_URL, get_url ("session"));
+        curl_easy_setopt (curl.get (), CURLOPT_HTTPHEADER, hd_rest.get ());
+        curl_easy_setopt (curl.get (), CURLOPT_POSTFIELDS, json_postfields.get ());
+        curl_easy_setopt (curl.get (), CURLOPT_WRITEFUNCTION, curl_callback);
+        curl_easy_setopt (curl.get (), CURLOPT_WRITEDATA, return_data);
         
-        if (curl_easy_perform (curl) != CURLE_OK) {
+        if (curl_easy_perform (curl.get ()) != CURLE_OK) {
             std::cout << "An error occured with data retrieval." << std::endl;
         } else process_data (return_data);
         free_memory (return_data);
-        JSON::cJSON_free (json_postfields);
-        curl_slist_free_all (hd_rest);
+//        JSON::cJSON_free (json_postfields);
+//        curl_slist_free_all (hd_rest);
     }
     
     RET_CODE IGConnect :: cleanup_request (MemoryBlock * &mb) {
-        if ((post_return = JSON::cJSON_Parse (mb->memory)) == nullptr) {
+        post_return.reset (JSON::cJSON_Parse (mb->memory));
+        if (post_return.get () == nullptr) {
             if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
                 return RET_CODE::FAIL_ALL;
             } else {

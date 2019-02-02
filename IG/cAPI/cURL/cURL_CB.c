@@ -38,8 +38,18 @@ struct MemoryBlock * init_memory (void) {
     return memblk;
 }
 
-void free_memory (const struct MemoryBlock * memblk) {
+void free_memory (struct MemoryBlock * memblk) {
     
     free ((char *) memblk->memory);
     free ((struct MemoryBlock *) memblk);
 }
+
+CURL * create_curl (void) {
+    curl_global_init (CURL_GLOBAL_ALL);
+    return NULL;
+}
+
+void destroy_curl (CURL * c) {
+    curl_easy_cleanup (c);
+    curl_global_cleanup ();
+};
