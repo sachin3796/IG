@@ -16,10 +16,13 @@
 #include "cURL.hpp"
 #include "cJSON.hpp"
 
-#define fnPtr(T) void(*)(T *)
-#define tmplt_(T) T, fnPtr(T)
-
+/* Turn Debugging Mode On */
 #define DEBUG true
+/* Templates */
+template <class T1, class T2> struct _FUNC { typedef T1 (*functionPtr) (T2); };
+template <typename T> using fnPtr = typename _FUNC<void, T>::functionPtr;
+/* MACRO Function: Map "tmplt_(T)" --> "T = Constructor (), &Destructor(T*)" */
+#define tmplt_(T) T, fnPtr<T*>
 
 namespace IG {
     
