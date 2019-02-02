@@ -27,12 +27,12 @@ namespace IG {
     
     class IGConnect {
     private:
-        typedef const char CC;
         /* IG Data Structure */
         const IGAuth * const igPtr;
         /* cURL API Objects */
         CURL * curl;
         MemoryBlock * return_data;
+        curl_slist * hd_rest;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
@@ -44,9 +44,11 @@ namespace IG {
         void process_data (void);
         /* Set-up Functions */
         const char * const J_body_parse (void);
-        const curl_slist * const set_headers (struct curl_slist * hd);
+        curl_slist * const set_headers (void);
         void set_curl_options (void);
         RET_CODE cleanup_request (void);
+        typedef const char CC;
+        typedef std::string stdstr;
     protected:
     public:
         IGConnect (const char * const fn); // Constructor

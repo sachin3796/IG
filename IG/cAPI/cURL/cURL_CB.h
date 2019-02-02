@@ -17,10 +17,10 @@ struct MemoryBlock {
     char * memory;
     size_t size;
 };
-typedef struct MemoryBlock MemoryStruct;
+typedef struct MemoryBlock MemoryBlock;
 
 extern struct MemoryBlock * init_memory (void);
-extern void free_memory (const struct MemoryBlock * memory);
+extern void free_memory (const struct MemoryBlock * memblk);
 extern size_t curl_callback (void * content, size_t size, size_t nmemb, struct MemoryBlock * memblk);
 
 #endif /* cURL_CB_h */

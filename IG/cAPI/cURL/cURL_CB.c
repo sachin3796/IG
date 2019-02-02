@@ -24,22 +24,22 @@ size_t curl_callback (void * content, size_t sz, size_t nmemb, struct MemoryBloc
 }
 
 struct MemoryBlock * init_memory (void) {
-    struct MemoryBlock * memblock = NULL;
-    if ((memblock = malloc (sizeof (struct MemoryBlock))) == NULL) {
+    struct MemoryBlock * memblk = NULL;
+    if ((memblk = malloc (sizeof (struct MemoryBlock))) == NULL) {
         printf ("Allocation of a memory block failed.\n");
         return NULL;
     }
-    if ((memblock->memory = malloc (1)) == NULL) {
+    if ((memblk->memory = malloc (1)) == NULL) {
         printf ("Allocation of a memory block failed.\n");
-        free (memblock);
+        free (memblk);
         return NULL;
     }
-    memblock->size = 0;
-    return memblock;
+    memblk->size = 0;
+    return memblk;
 }
 
-void free_memory (const struct MemoryBlock * block) {
+void free_memory (const struct MemoryBlock * memblk) {
     
-    free ((char *) block->memory);
-    free ((struct MemoryBlock *) block);
+    free ((char *) memblk->memory);
+    free ((struct MemoryBlock *) memblk);
 }

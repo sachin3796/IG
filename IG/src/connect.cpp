@@ -19,6 +19,7 @@ namespace IG {
     content_type ("application/json"),
     accept       ("application/json; charset=UTF-8"),
     curl         (nullptr),
+    hd_rest      (nullptr),
     post_return  (nullptr) {
         std::string acc_type = igPtr->acc.type;
         if (acc_type == "DEMO") base_url = "https://demo-api.ig.com/gateway/deal/";
@@ -54,6 +55,7 @@ namespace IG {
     
     IGConnect :: ~IGConnect (void) {
         /* Cleanup for C objects */
+        curl_slist_free_all (hd_rest);
         curl_easy_cleanup (curl);
         curl_global_cleanup ();
         JSON::cJSON_Delete (post_return);
@@ -73,16 +75,12 @@ namespace IG {
         return str;
     }
     
-    const curl_slist * const IGConnect :: set_headers (struct curl_slist * hd) {
-        std::string ky = "X-IG-API-KEY: ";
-        ky += igPtr->API_Key;
-        hd = curl_slist_append (hd, ky.c_str ());
-        std::string ct = "Content-Type: ";
-        ct += content_type;
-        hd = curl_slist_append (hd, ct.c_str ());
-        std::string ac = "Accept: ";
-        ac += accept;
-        hd = curl_slist_append (hd, ac.c_str ());
+    curl_slist * const IGConnect :: set_headers (void) {
+        curl_slist * hd = nullptr;
+        auto add_hdrs = [&hd] (stdstr key, CC * val) -> void { hd = curl_slist_append (hd, (key+=val).c_str ()); };
+        add_hdrs ("X-IG-API-KEY: ", igPtr->API_Key);
+        add_hdrs ("Content-Type: ", content_type);
+        add_hdrs ("Accept: ", accept);
         return hd;
     }
     
@@ -91,12 +89,10 @@ namespace IG {
         curl_easy_setopt (curl, CURLOPT_VERBOSE, true);
         curl_easy_setopt (curl, CURLOPT_POST, true);
 #endif
-        auto get_url = [url=base_url](CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
+        auto get_url = [url=base_url] (CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
         curl_easy_setopt (curl, CURLOPT_URL, get_url ("session"));
         
-        curl_slist * hd_rest = nullptr;
-        curl_easy_setopt (curl, CURLOPT_HTTPHEADER, set_headers (hd_rest));
-        curl_slist_free_all (hd_rest);
+        curl_easy_setopt (curl, CURLOPT_HTTPHEADER, hd_rest = set_headers ());
         
         curl_easy_setopt (curl, CURLOPT_POSTFIELDS, J_body_parse ());
         curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, curl_callback);
@@ -105,13 +101,13 @@ namespace IG {
     
     RET_CODE IGConnect :: cleanup_request (void) {
         if ((post_return = JSON::cJSON_Parse (return_data->memory)) == nullptr) {
-            if ((return_data->memory = (char *) realloc (return_data->memory, 1)) == nullptr) {
+            if ((return_data->memory = (char *) std::realloc (return_data->memory, 1)) == nullptr) {
                 return RET_CODE::FAIL_ALL;
             } else {
                 return_data->memory = nullptr;
                 return RET_CODE::FAIL_RETURN;
             }
-        } else if ((return_data->memory = (char *) realloc (return_data->memory, 1)) == nullptr) {
+        } else if ((return_data->memory = (char *) std::realloc (return_data->memory, 1)) == nullptr) {
             return RET_CODE::FAIL_REALLOC;
         } else {
             return_data->memory = nullptr;

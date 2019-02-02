@@ -78,9 +78,9 @@
 		9950145D2204EC6C0058D0B1 /* IG */ = {
 			isa = PBXGroup;
 			children = (
+				995014772204EC8D0058D0B1 /* Resources */,
 				9950146A2204EC8D0058D0B1 /* cAPI */,
 				995014652204EC8D0058D0B1 /* inc */,
-				995014772204EC8D0058D0B1 /* Resources */,
 				995014742204EC8D0058D0B1 /* src */,
 			);
 			path = IG;
