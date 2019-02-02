@@ -7,9 +7,8 @@
  */
 
 #include <memory>
-#include "../inc/connect.hpp"
 
-#define DEBUG 1
+#include "../inc/connect.hpp"
 
 int main (void) {
     

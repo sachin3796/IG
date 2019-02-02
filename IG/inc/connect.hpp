@@ -16,7 +16,10 @@
 #include "cURL.hpp"
 #include "cJSON.hpp"
 
-#define tmplt(T) T, void(*)(T *)
+#define fnPtr(T) void(*)(T *)
+#define tmplt_(T) T, fnPtr(T)
+
+#define DEBUG true
 
 namespace IG {
     
@@ -31,11 +34,11 @@ namespace IG {
     class IGConnect {
     private:
         /* IG Data Structure */
-        std::unique_ptr<tmplt(const IGAuth)> igPtr;
+        const std::unique_ptr<tmplt_(const IGAuth)> igPtr;
         /* cURL API Objects */
-        std::unique_ptr<tmplt(CURL)> curl;
+        std::unique_ptr<tmplt_(CURL)> curl;
         /* cJSON API Objects */
-        std::unique_ptr<tmplt(JSON::cJSON)> post_return;
+        std::unique_ptr<tmplt_(JSON::cJSON)> post_return;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
@@ -43,14 +46,14 @@ namespace IG {
         std::string CST;
         std::string XST;
         /* Class Functions */
-        void process_data (MemoryBlock * &mb);
-        /* Set-up Functions */
+        void set_curl_options (void);
+        void process_data (MemoryBlock * mb);
+        RET_CODE cleanup_request (MemoryBlock * mb);
         char * const J_body_parse (void);
         curl_slist * const set_headers (void);
-        void set_curl_options (void);
-        RET_CODE cleanup_request (MemoryBlock * &mb);
+        /* Type definitions */
         typedef const char CC;
-        typedef std::string stdstr;
+        typedef std::string SS;
     protected:
     public:
         IGConnect (const char * const fn); // Constructor

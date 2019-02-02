@@ -6,10 +6,11 @@
  *  Copyright © 2019 Sach Patel. All rights reserved.
  */
 
-#include "cURL_CB.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "cURL_CB.h"
 
 size_t curl_callback (void * content, size_t sz, size_t nmemb, struct MemoryBlock * memblk) {
     size_t bufsize = sz * nmemb;

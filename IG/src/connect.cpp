@@ -33,24 +33,55 @@ namespace IG {
         if (curl.get () != nullptr) set_curl_options ();
     }
     
-    void IGConnect :: process_data (MemoryBlock * &mb) {
+    IGConnect :: ~IGConnect (void) { }
+    
+    void IGConnect :: set_curl_options (void) {
+        std::unique_ptr<tmplt_(curl_slist)> hd_rest (set_headers (), &curl_slist_free_all);
+        std::unique_ptr<tmplt_(void)> json_postfields (J_body_parse (), &JSON::cJSON_free);
+        std::unique_ptr<tmplt_(MemoryBlock)> return_data (init_memory (), &free_memory);
+        
+#if (DEBUG == 1)
+        curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, true);
+        curl_easy_setopt (curl.get (), CURLOPT_POST, true);
+#endif
+        curl_easy_setopt (curl.get (), CURLOPT_URL, [url=base_url] (CC * ext) mutable -> CC * { return (url+=ext).c_str (); } ("session"));
+        curl_easy_setopt (curl.get (), CURLOPT_HTTPHEADER, hd_rest.get ());
+        curl_easy_setopt (curl.get (), CURLOPT_POSTFIELDS, json_postfields.get ());
+        curl_easy_setopt (curl.get (), CURLOPT_WRITEFUNCTION, curl_callback);
+        curl_easy_setopt (curl.get (), CURLOPT_WRITEDATA, return_data.get ());
+        
+        if (curl_easy_perform (curl.get ()) != CURLE_OK) std::cout << "An error occured with data retrieval." << std::endl;
+        else process_data (return_data.get ());
+    }
+    
+    void IGConnect :: process_data (MemoryBlock * mb) {
         switch (cleanup_request (mb)) {
-            case RET_CODE::FAIL_ALL: {
-                std::cout << "Parsing and Reallocation of received data failed." << std::endl;
-                /* Free memory quickly */
-            } case RET_CODE::FAIL_RETURN: {
-                std::cout << "Parsing of received data failed." << std::endl;
-            } case RET_CODE::FAIL_REALLOC: {
-                std::cout << "Reallocation of memory block failed." << std::endl;
-                /* Free memory quickly */
-            } case RET_CODE::SUCCESS: {
+            case RET_CODE::FAIL_ALL: { std::cout << "Parsing and Reallocation of received data failed." << std::endl; }
+            case RET_CODE::FAIL_RETURN: { std::cout << "Parsing of received data failed." << std::endl; }
+            case RET_CODE::FAIL_REALLOC: { std::cout << "Reallocation of memory block failed." << std::endl; }
+            case RET_CODE::SUCCESS: {
                 std::cout << "Successfully received data." << std::endl;
                 std::cout << JSON::cJSON_Print (post_return.get ()) << std::endl;
             }
         }
     }
     
-    IGConnect :: ~IGConnect (void) { }
+    RET_CODE IGConnect :: cleanup_request (MemoryBlock * mb) {
+        post_return.reset (JSON::cJSON_Parse (mb->memory));
+        if (post_return.get () == nullptr) {
+            if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) return RET_CODE::FAIL_ALL;
+            else {
+                mb->memory = nullptr;
+                return RET_CODE::FAIL_RETURN;
+            }
+        } else if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
+            return RET_CODE::FAIL_REALLOC;
+        } else {
+            mb->memory = nullptr;
+            mb->size = 0;
+            return RET_CODE::SUCCESS;
+        }
+    }
     
     char * const IGConnect :: J_body_parse (void) {
         /* Build a JSON object and parse it as a string */
@@ -66,54 +97,11 @@ namespace IG {
     
     curl_slist * const IGConnect :: set_headers (void) {
         curl_slist * hd = nullptr;
-        auto add_hdrs = [&hd] (stdstr key, CC * val) -> void { hd = curl_slist_append (hd, (key+=val).c_str ()); };
+        auto add_hdrs = [&hd] (SS key, CC * val) -> void { hd = curl_slist_append (hd, (key+=val).c_str ()); };
         add_hdrs ("X-IG-API-KEY: ", igPtr->API_Key);
         add_hdrs ("Content-Type: ", content_type);
         add_hdrs ("Accept: ", accept);
         return hd;
-    }
-    
-    void IGConnect :: set_curl_options (void) {
-        std::unique_ptr<tmplt(curl_slist)> hd_rest (set_headers (), &curl_slist_free_all);
-        std::unique_ptr<tmplt(void)> json_postfields (J_body_parse (), &JSON::cJSON_free);
-        MemoryBlock * return_data = init_memory ();
-//        std::unique_ptr<tmplt(MemoryBlock)> return_data (init_memory (), &free_memory);
-        
-        auto get_url = [url=base_url] (CC * ext="") mutable -> CC * { return (url+=ext).c_str (); };
-#if (DEBUG == 1)
-        curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, true);
-        curl_easy_setopt (curl.get (), CURLOPT_POST, true);
-#endif
-        curl_easy_setopt (curl.get (), CURLOPT_URL, get_url ("session"));
-        curl_easy_setopt (curl.get (), CURLOPT_HTTPHEADER, hd_rest.get ());
-        curl_easy_setopt (curl.get (), CURLOPT_POSTFIELDS, json_postfields.get ());
-        curl_easy_setopt (curl.get (), CURLOPT_WRITEFUNCTION, curl_callback);
-        curl_easy_setopt (curl.get (), CURLOPT_WRITEDATA, return_data);
-        
-        if (curl_easy_perform (curl.get ()) != CURLE_OK) {
-            std::cout << "An error occured with data retrieval." << std::endl;
-        } else process_data (return_data);
-        free_memory (return_data);
-//        JSON::cJSON_free (json_postfields);
-//        curl_slist_free_all (hd_rest);
-    }
-    
-    RET_CODE IGConnect :: cleanup_request (MemoryBlock * &mb) {
-        post_return.reset (JSON::cJSON_Parse (mb->memory));
-        if (post_return.get () == nullptr) {
-            if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
-                return RET_CODE::FAIL_ALL;
-            } else {
-                mb->memory = nullptr;
-                return RET_CODE::FAIL_RETURN;
-            }
-        } else if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
-            return RET_CODE::FAIL_REALLOC;
-        } else {
-            mb->memory = nullptr;
-            mb->size = 0;
-            return RET_CODE::SUCCESS;
-        }
     }
     
 }
