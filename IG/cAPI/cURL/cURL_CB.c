@@ -40,19 +40,3 @@ struct MemoryBlock * init_memory (void) {
     memblk->size = 0;
     return memblk;
 }
-
-void free_memory (struct MemoryBlock * memblk) {
-    
-    free ((char *) memblk->memory);
-    free ((struct MemoryBlock *) memblk);
-}
-
-CURL * create_curl (void) {
-    curl_global_init (CURL_GLOBAL_ALL);
-    return (CURL *) NULL;
-}
-
-void destroy_curl (CURL * c) {
-    curl_easy_cleanup (c);
-    curl_global_cleanup ();
-};

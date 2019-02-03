@@ -20,10 +20,6 @@ struct MemoryBlock {
 typedef struct MemoryBlock MemoryBlock;
 
 extern struct MemoryBlock * init_memory (void);
-extern void free_memory (struct MemoryBlock * memblk);
 extern size_t curl_callback (void * content, size_t size, size_t nmemb, struct MemoryBlock * memblk);
-
-extern CURL * create_curl (void);
-extern void destroy_curl (CURL * c);
 
 #endif /* cURL_CB_h */

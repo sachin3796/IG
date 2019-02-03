@@ -16,7 +16,8 @@ namespace IG {
     
     IGConnect :: IGConnect (const char * const fn) :
     igPtr        (init_igPtr (fn), &free_igPtr),
-    curl         (create_curl (), &destroy_curl),
+    curl         ([] () { curl_global_init (CURL_GLOBAL_ALL); return nullptr; } (),
+                  [] (CURL * c) { curl_easy_cleanup (c); curl_global_cleanup (); }),
     content_type ("application/json"),
     accept       ("application/json; charset=UTF-8") {
         std::string acc_type = igPtr->acc.type;
@@ -32,10 +33,11 @@ namespace IG {
     IGConnect :: ~IGConnect (void) { }
     
     void IGConnect :: set_curl_options (void) {
+        auto free_mem = [] (MemoryBlock * mb) -> void { free ((char *) mb->memory); free (mb); };
         uniquePtr<curl_slist> hd_rest (set_headers (), &curl_slist_free_all);
-        uniquePtr<char> json_post (J_body_parse (), [] (char * s) { std::free (s); });
-        uniquePtr<MemoryBlock> sent_data (init_memory (), &free_memory);
-        uniquePtr<MemoryBlock> return_data (init_memory (), &free_memory);
+        uniquePtr<char> json_post (J_body_parse (), [] (char * s) -> void { std::free (s); });
+        uniquePtr<MemoryBlock> sent_data (init_memory (), free_mem);
+        uniquePtr<MemoryBlock> return_data (init_memory (), free_mem);
         uniquePtr<cJSON> post_sent (nullptr, &cJSON_Delete);
         uniquePtr<cJSON> post_return (nullptr, &cJSON_Delete);
         
@@ -59,7 +61,13 @@ namespace IG {
     void IGConnect :: process_data (MemoryBlock * mb, cJSON * js) {
         char * tmp = nullptr;
         js = cJSON_Parse (mb->memory);
-        switch ([&] (void) -> RET_CODE { if ((tmp = (char *) std::realloc (mb->memory, 1)) != nullptr) { *mb = { .memory = tmp, .size = 0 }; return (js != nullptr) ? SUCCESS : FAIL_POST; } else return (js != nullptr) ? FAIL_REALLOC : FAIL_ALL; } ()) {
+        RET_CODE ret = [&] (void) -> RET_CODE {
+            if ((tmp = (char *) std::realloc (mb->memory, 1)) != nullptr) {
+                *mb = { .memory = tmp, .size = 0 };
+                return (js != nullptr) ? SUCCESS : FAIL_POST;
+            } else return (js != nullptr) ? FAIL_REALLOC : FAIL_ALL;
+        } ();
+        switch (ret) {
             case FAIL_ALL:
                 std::cout << "Parsing and Reallocation of data failed." << std::endl;
                 break;
