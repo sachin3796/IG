@@ -15,10 +15,10 @@ namespace IG {
     
     IGConnect :: IGConnect (const char * const fn) :
     igPtr        (init_igPtr (fn), &free_igPtr),
-    content_type ("application/json"),
-    accept       ("application/json; charset=UTF-8"),
     curl         (create_curl (), &destroy_curl),
-    post_return  (nullptr, &JSON::cJSON_Delete)
+    post_return  (nullptr, &JSON::cJSON_Delete),
+    content_type ("application/json"),
+    accept       ("application/json; charset=UTF-8")
     {
         std::string acc_type = igPtr->acc.type;
         if (acc_type == "DEMO") base_url = "https://demo-api.ig.com/gateway/deal/";
@@ -47,7 +47,7 @@ namespace IG {
         curl_easy_setopt (curl.get (), CURLOPT_URL, [url=base_url] (CC * ext) mutable -> CC * { return (url+=ext).c_str (); } ("session"));
         curl_easy_setopt (curl.get (), CURLOPT_HTTPHEADER, hd_rest.get ());
         curl_easy_setopt (curl.get (), CURLOPT_POSTFIELDS, json_postfields.get ());
-        curl_easy_setopt (curl.get (), CURLOPT_WRITEFUNCTION, curl_callback);
+        curl_easy_setopt (curl.get (), CURLOPT_WRITEFUNCTION, &curl_callback);
         curl_easy_setopt (curl.get (), CURLOPT_WRITEDATA, return_data.get ());
         
         if (curl_easy_perform (curl.get ()) != CURLE_OK) std::cout << "An error occured with data retrieval." << std::endl;
@@ -56,28 +56,38 @@ namespace IG {
     
     void IGConnect :: process_data (MemoryBlock * mb) {
         switch (cleanup_request (mb)) {
-            case RET_CODE::FAIL_ALL: { std::cout << "Parsing and Reallocation of received data failed." << std::endl; }
-            case RET_CODE::FAIL_RETURN: { std::cout << "Parsing of received data failed." << std::endl; }
-            case RET_CODE::FAIL_REALLOC: { std::cout << "Reallocation of memory block failed." << std::endl; }
-            case RET_CODE::SUCCESS: {
+            case RET_CODE::FAIL_ALL:
+                std::cout << "Parsing and Reallocation of received data failed." << std::endl;
+                break;
+            case RET_CODE::FAIL_RETURN:
+                std::cout << "Parsing of received data failed." << std::endl;
+                break;
+            case RET_CODE::FAIL_REALLOC:
+                std::cout << "Reallocation of memory block failed." << std::endl;
+                break;
+            case RET_CODE::SUCCESS:
                 std::cout << "Successfully received data." << std::endl;
                 std::cout << JSON::cJSON_Print (post_return.get ()) << std::endl;
-            }
+                break;
         }
     }
     
     RET_CODE IGConnect :: cleanup_request (MemoryBlock * mb) {
+        char * tmp = nullptr;
         post_return.reset (JSON::cJSON_Parse (mb->memory));
+        tmp = (char *) std::realloc (mb->memory, 1);
         if (post_return.get () == nullptr) {
-            if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) return RET_CODE::FAIL_ALL;
-            else {
-                mb->memory = nullptr;
+            if (tmp == nullptr) {
+                return RET_CODE::FAIL_ALL;
+            } else {
+                mb->memory = tmp;
+                mb->size = 0;
                 return RET_CODE::FAIL_RETURN;
             }
-        } else if ((mb->memory = (char *) std::realloc (mb->memory, 1)) == nullptr) {
+        } else if (tmp == nullptr) {
             return RET_CODE::FAIL_REALLOC;
         } else {
-            mb->memory = nullptr;
+            mb->memory = tmp;
             mb->size = 0;
             return RET_CODE::SUCCESS;
         }
