@@ -18,21 +18,27 @@
 
 /* Toggle HTTP Modes */
 enum {
-    VERBOSE_MODE = true,
+    VERBOSE_MODE = false,
     POST_MODE    = true
 };
 
-/* Templates */
-template <class T1, class T2> struct _FUNC { typedef T1 (*functionPtr) (T2); };
-template <typename T> using fnPtr = typename _FUNC<void, T>::functionPtr;
-/* MACRO Function: Map "tmplt_(T)" --> "T = Constructor (), &Destructor(T*)" */
-#define tmplt_(T) T, fnPtr<T*>
+/* Templates to define the &deleter object for std::unique_ptr<> */
+namespace custom {
+    template <class T1, class T2> struct _FUNC { typedef T1 (*functionPtr) (T2); };
+    template <typename T> using deleter = typename _FUNC<void, T>::functionPtr;
+}
 
 namespace IG {
     
-    enum class RET_CODE {
+    /* Type define uniquePtr for unique_ptr with custom deleter */
+    template <typename T> using uniquePtr = typename std::unique_ptr<T, custom::deleter<T*> >;
+    
+    /* Inline function for getting raw pointer from unique pointer */
+    template <typename T> static inline constexpr T * raw (const uniquePtr<T> &sp) { return sp.get (); }
+    
+    enum RET_CODE {
         SUCCESS,
-        FAIL_RETURN,
+        FAIL_POST,
         FAIL_REALLOC,
         FAIL_ALL
     };
@@ -41,11 +47,10 @@ namespace IG {
     class IGConnect {
     private:
         /* IG Data Structure */
-        const std::unique_ptr<tmplt_(const IGAuth)> igPtr;
+        uniquePtr<IGAuth> igPtr;
         /* cURL API Objects */
-        std::unique_ptr<tmplt_(CURL)> curl;
+        uniquePtr<CURL> curl;
         /* cJSON API Objects */
-        std::unique_ptr<tmplt_(cJSON)> post_return;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
@@ -54,13 +59,15 @@ namespace IG {
         std::string XST;
         /* Class Functions */
         void set_curl_options (void);
-        void process_data (MemoryBlock * mb);
-        RET_CODE cleanup_request (MemoryBlock * mb);
-        char * const J_body_parse (void);
+        void process_data (MemoryBlock * mb, cJSON * js);
+        char * J_body_parse (void);
         curl_slist * const set_headers (void);
         /* Type definitions */
         typedef const char CC;
         typedef std::string SS;
+        typedef cJSON cJ;
+        typedef CURL CU;
+        typedef curl_slist CLL;
     protected:
     public:
         IGConnect (const char * const fn); // Constructor

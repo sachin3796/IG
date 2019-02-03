@@ -13,7 +13,7 @@
 #include <string.h>
 #include <assert.h>
 
-const struct IGAuth * const init_igPtr (const char * fn) {
+struct IGAuth * const init_igPtr (const char * fn) {
     struct IGAuth * IG = NULL;
     if ((IG = file2ig (IG, fn)) == NULL) {
         printf ("Memory could not be allocated.\n");
@@ -67,7 +67,7 @@ struct IGAuth * file2ig (struct IGAuth * ig_ptr, const char * fn) {
     return ig_ptr;
 }
 
-void free_igPtr (const struct IGAuth * ig_ptr) {
+void free_igPtr (struct IGAuth * ig_ptr) {
     /* Deallocate memory. */
     free ((char *) ig_ptr->acc.number);
     free ((char *) ig_ptr->login.password);

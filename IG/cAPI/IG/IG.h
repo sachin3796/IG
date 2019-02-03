@@ -36,9 +36,9 @@ struct IGAuth {
 };
 typedef struct IGAuth IGAuth;
     
-extern const struct IGAuth * const init_igPtr (const char * fn);
+extern struct IGAuth * const init_igPtr (const char * fn);
 struct IGAuth * file2ig (struct IGAuth * ig_p, const char * fn);
-extern void free_igPtr (const struct IGAuth * ig_p);
+extern void free_igPtr (struct IGAuth * ig_p);
 
 #ifdef __cplusplus
 }

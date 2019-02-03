@@ -11,13 +11,17 @@
 
 #include <exception>
 
-class StringValueException : public std::exception {
-private:
-    const char * message;
-    const char * what (void) const throw ();
-public:
-    StringValueException (const char * thr);
-    ~StringValueException (void);
-};
+namespace Except {
+    
+    class StringValue : public std::exception {
+    private:
+        const char * message;
+        const char * what (void) const throw ();
+    public:
+        StringValue (const char * thr);
+        ~StringValue (void);
+    };
+    
+}
 
 #endif /* CustomExceptions_hpp */

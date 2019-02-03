@@ -10,12 +10,16 @@
 
 #include <iostream>
 
-StringValueException :: StringValueException (const char * thr) : message (thr) {
-    std::cout << what () << std::endl;
-}
-
-StringValueException :: ~StringValueException (void) {}
-
-const char * StringValueException :: what (void) const throw () {
-    return message;
+namespace Except {
+    
+    StringValue :: StringValue (const char * thr) : message (thr) {
+        std::cout << what () << std::endl;
+    }
+    
+    StringValue :: ~StringValue (void) {}
+    
+    const char * StringValue :: what (void) const throw () {
+        return message;
+    }
+    
 }
