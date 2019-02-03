@@ -13,6 +13,7 @@
 		9950147D2204EC8D0058D0B1 /* connect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 995014752204EC8D0058D0B1 /* connect.cpp */; };
 		9950147E2204EC8D0058D0B1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 995014762204EC8D0058D0B1 /* main.cpp */; };
 		995014812204ED3A0058D0B1 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 995014802204ED3A0058D0B1 /* libcurl.tbd */; };
+		99501484220732280058D0B1 /* CustomExceptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 99501482220732280058D0B1 /* CustomExceptions.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,6 +45,9 @@
 		995014782204EC8D0058D0B1 /* config_demo.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config_demo.txt; sourceTree = "<group>"; };
 		995014792204EC8D0058D0B1 /* config_example.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config_example.txt; sourceTree = "<group>"; };
 		995014802204ED3A0058D0B1 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		99501482220732280058D0B1 /* CustomExceptions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CustomExceptions.cpp; sourceTree = "<group>"; };
+		99501483220732280058D0B1 /* CustomExceptions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CustomExceptions.hpp; sourceTree = "<group>"; };
+		9950149822079FE10058D0B1 /* functionPtr.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = functionPtr.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +97,8 @@
 				995014672204EC8D0058D0B1 /* connect.hpp */,
 				995014682204EC8D0058D0B1 /* IG.hpp */,
 				995014692204EC8D0058D0B1 /* cJSON.hpp */,
+				99501483220732280058D0B1 /* CustomExceptions.hpp */,
+				9950149822079FE10058D0B1 /* functionPtr.hpp */,
 			);
 			path = inc;
 			sourceTree = "<group>";
@@ -137,8 +143,9 @@
 		995014742204EC8D0058D0B1 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				995014752204EC8D0058D0B1 /* connect.cpp */,
 				995014762204EC8D0058D0B1 /* main.cpp */,
+				995014752204EC8D0058D0B1 /* connect.cpp */,
+				99501482220732280058D0B1 /* CustomExceptions.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -216,6 +223,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99501484220732280058D0B1 /* CustomExceptions.cpp in Sources */,
 				9950147A2204EC8D0058D0B1 /* cJSON.c in Sources */,
 				9950147C2204EC8D0058D0B1 /* cURL_CB.c in Sources */,
 				9950147D2204EC8D0058D0B1 /* connect.cpp in Sources */,
@@ -341,6 +349,7 @@
 		995014632204EC6C0058D0B1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KD4GM4VNGZ;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -350,6 +359,7 @@
 		995014642204EC6C0058D0B1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = KD4GM4VNGZ;
 				PRODUCT_NAME = "$(TARGET_NAME)";

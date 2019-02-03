@@ -1,6 +1,6 @@
 /*
  *  connect.cpp
- *  Finance
+ *  IG
  *
  *  Created by Sach Patel on 28/01/2019.
  *  Copyright © 2019 Sach Patel. All rights reserved.
@@ -12,30 +12,18 @@
 #include "IG.hpp"
 #include "cURL.hpp"
 #include "cJSON.hpp"
+#include "functionPtr.hpp"
 
 #include <string>
-#include <memory>
-
-/* Toggle HTTP Modes */
-enum {
-    VERBOSE_MODE = false,
-    POST_MODE    = true
-};
-
-/* Templates to define the &deleter object for std::unique_ptr<> */
-namespace custom {
-    template <class T1, class T2> struct _FUNC { typedef T1 (*functionPtr) (T2); };
-    template <typename T> using deleter = typename _FUNC<void, T>::functionPtr;
-}
 
 namespace IG {
     
-    /* Type define uniquePtr for unique_ptr with custom deleter */
-    template <typename T> using uniquePtr = typename std::unique_ptr<T, custom::deleter<T*> >;
-    
-    /* Inline function for getting raw pointer from unique pointer */
-    template <typename T> static inline constexpr T * raw (const uniquePtr<T> &sp) { return sp.get (); }
-    
+    /* Custom Enumerations */
+    enum CURL_MODE {
+        VERBOSE_MODE = false,
+        POST_MODE    = true
+    };
+    typedef enum CURL_MODE CURL_MODE;
     enum RET_CODE {
         SUCCESS,
         FAIL_POST,
