@@ -26,7 +26,7 @@ namespace IG {
         /* Initialise a libcurl object */
         curl.reset (curl_easy_init ());
         /* Set LibCurl options */
-        if (raw (curl) != nullptr) set_curl_options ();
+        if (~curl != nullptr) set_curl_options ();
     }
     
     IGConnect :: ~IGConnect (void) { }
@@ -39,20 +39,20 @@ namespace IG {
         uniquePtr<cJSON> post_sent (nullptr, &cJSON_Delete);
         uniquePtr<cJSON> post_return (nullptr, &cJSON_Delete);
         
-        curl_easy_setopt (raw (curl), CURLOPT_VERBOSE, VERBOSE_MODE);
-        curl_easy_setopt (raw (curl), CURLOPT_POST, POST_MODE);
-        curl_easy_setopt (raw (curl), CURLOPT_URL, [u=base_url] (CC * x) mutable -> CC * { return (u += x).c_str (); } ("session"));
-        curl_easy_setopt (raw (curl), CURLOPT_HTTPHEADER, hd_rest.get ());
-        curl_easy_setopt (raw (curl), CURLOPT_POSTFIELDS, json_post.get ());
-        curl_easy_setopt (raw (curl), CURLOPT_READFUNCTION, &curl_callback);
-        curl_easy_setopt (raw (curl), CURLOPT_READDATA, sent_data.get ());
-        curl_easy_setopt (raw (curl), CURLOPT_WRITEFUNCTION, &curl_callback);
-        curl_easy_setopt (raw (curl), CURLOPT_WRITEDATA, return_data.get ());
+        curl_easy_setopt (~curl, CURLOPT_VERBOSE, VERBOSE_MODE);
+        curl_easy_setopt (~curl, CURLOPT_POST, POST_MODE);
+        curl_easy_setopt (~curl, CURLOPT_URL, [u=base_url] (CC * x) mutable -> CC * { return (u += x).c_str (); } ("session"));
+        curl_easy_setopt (~curl, CURLOPT_HTTPHEADER, ~hd_rest);
+        curl_easy_setopt (~curl, CURLOPT_POSTFIELDS, ~json_post);
+        curl_easy_setopt (~curl, CURLOPT_READFUNCTION, &curl_callback);
+        curl_easy_setopt (~curl, CURLOPT_READDATA, ~sent_data);
+        curl_easy_setopt (~curl, CURLOPT_WRITEFUNCTION, &curl_callback);
+        curl_easy_setopt (~curl, CURLOPT_WRITEDATA, ~return_data);
         
-        if (curl_easy_perform (raw (curl)) != CURLE_OK) std::cout << "An error occured with data retrieval." << std::endl;
+        if (curl_easy_perform (~curl) != CURLE_OK) std::cout << "An error occured with data retrieval." << std::endl;
         else {
-            process_data (raw (sent_data), raw (post_sent)); /* Expect no data */
-            process_data (raw (return_data), raw (post_return)); /* Expect lots of data */
+            process_data (~sent_data, ~post_sent); /* Expect no data */
+            process_data (~return_data, ~post_return); /* Expect lots of data */
         }
     }
     

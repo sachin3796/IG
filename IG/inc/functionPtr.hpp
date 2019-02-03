@@ -25,6 +25,7 @@ namespace IG {
     template <typename T> using uniquePtr = typename std::unique_ptr<T, FP::delPtr<T*> >;
     /* Inline function for getting raw pointer from unique pointer */
     template <typename T> static inline constexpr T * raw (const uniquePtr<T> &sp) { return sp.get (); }
+    template <typename T> static inline constexpr T * operator~ (const uniquePtr<T> &sp) { return sp.get (); }
     
 }
 
