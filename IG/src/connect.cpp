@@ -1,32 +1,30 @@
 /*
  *  connect.cpp
- *  Finance
+ *  IG
  *
  *  Created by Sach Patel on 28/01/2019.
  *  Copyright © 2019 Sach Patel. All rights reserved.
  */
 
+#include "../inc/connect.hpp"
+#include "../inc/CustomExceptions.hpp"
+
 #include <iostream>
 #include <cstdlib>
-
-#include "../inc/connect.hpp"
 
 namespace IG {
     
     IGConnect :: IGConnect (const char * const fn) :
     igPtr        (init_igPtr (fn), &free_igPtr),
     curl         (create_curl (), &destroy_curl),
-    post_return  (nullptr, &JSON::cJSON_Delete),
+    post_return  (nullptr, &cJSON_Delete),
     content_type ("application/json"),
     accept       ("application/json; charset=UTF-8")
     {
         std::string acc_type = igPtr->acc.type;
-        if (acc_type == "DEMO") base_url = "https://demo-api.ig.com/gateway/deal/";
-        else if (acc_type == "LIVE") base_url = "https://api.ig.com/gateway/deal/";
-        else {
-            std::cout << "The account type must either be 'DEMO' or 'LIVE'." << std::endl;
-            return;
-        }
+        try { if (acc_type != "DEMO" && acc_type != "LIVE") throw StringValueException ("Account type must either be 'DEMO' or 'LIVE'."); }
+        catch (const StringValueException &e) { return; }
+        base_url = [at=acc_type] (SS s) -> SS { return (s += (at == "DEMO") ? "demo-" : "") += "api.ig.com/gateway/deal/"; } ("https://");
         /* Initialise a libcurl object */
         curl.reset (curl_easy_init ());
         /* Set LibCurl options */
@@ -37,7 +35,7 @@ namespace IG {
     
     void IGConnect :: set_curl_options (void) {
         std::unique_ptr<tmplt_(curl_slist)> hd_rest (set_headers (), &curl_slist_free_all);
-        std::unique_ptr<tmplt_(void)> json_postfields (J_body_parse (), &JSON::cJSON_free);
+        std::unique_ptr<tmplt_(void)> json_postfields (J_body_parse (), &cJSON_free);
         std::unique_ptr<tmplt_(MemoryBlock)> return_data (init_memory (), &free_memory);
         
         curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, VERBOSE_MODE);
@@ -66,14 +64,14 @@ namespace IG {
                 break;
             case RET_CODE::SUCCESS:
                 std::cout << "Successfully received data." << std::endl;
-                std::cout << JSON::cJSON_Print (post_return.get ()) << std::endl;
+                std::cout << cJSON_Print (post_return.get ()) << std::endl;
                 break;
         }
     }
     
     RET_CODE IGConnect :: cleanup_request (MemoryBlock * mb) {
         char * tmp = nullptr;
-        post_return.reset (JSON::cJSON_Parse (mb->memory));
+        post_return.reset (cJSON_Parse (mb->memory));
         tmp = (char *) std::realloc (mb->memory, 1);
         if (post_return.get () == nullptr) {
             if (tmp == nullptr) {
@@ -95,12 +93,12 @@ namespace IG {
     char * const IGConnect :: J_body_parse (void) {
         /* Build a JSON object and parse it as a string */
         char * str = nullptr;
-        JSON::cJSON * json = JSON::cJSON_CreateObject ();
-        JSON::cJSON_AddStringToObject (json, "identifier", igPtr->login.username);
-        JSON::cJSON_AddStringToObject (json, "password",   igPtr->login.password);
+        cJSON * json = cJSON_CreateObject ();
+        cJSON_AddStringToObject (json, "identifier", igPtr->login.username);
+        cJSON_AddStringToObject (json, "password",   igPtr->login.password);
         /* Parse the object to a string and free the memory. */
-        str = JSON::cJSON_Print (json);
-        JSON::cJSON_Delete (json);
+        str = cJSON_Print (json);
+        cJSON_Delete (json);
         return str;
     }
     

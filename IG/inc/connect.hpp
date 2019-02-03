@@ -9,12 +9,12 @@
 #ifndef connect_hpp
 #define connect_hpp
 
-#include <string>
-#include <memory>
-
 #include "IG.hpp"
 #include "cURL.hpp"
 #include "cJSON.hpp"
+
+#include <string>
+#include <memory>
 
 /* Toggle HTTP Modes */
 enum {
@@ -45,7 +45,7 @@ namespace IG {
         /* cURL API Objects */
         std::unique_ptr<tmplt_(CURL)> curl;
         /* cJSON API Objects */
-        std::unique_ptr<tmplt_(JSON::cJSON)> post_return;
+        std::unique_ptr<tmplt_(cJSON)> post_return;
         /* Data required for HTTP requests */
         std::string base_url;
         const char * const content_type;
