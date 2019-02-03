@@ -40,10 +40,9 @@ namespace IG {
         std::unique_ptr<tmplt_(void)> json_postfields (J_body_parse (), &JSON::cJSON_free);
         std::unique_ptr<tmplt_(MemoryBlock)> return_data (init_memory (), &free_memory);
         
-#if (DEBUG == 1)
-        curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, true);
-        curl_easy_setopt (curl.get (), CURLOPT_POST, true);
-#endif
+        curl_easy_setopt (curl.get (), CURLOPT_VERBOSE, VERBOSE_MODE);
+        curl_easy_setopt (curl.get (), CURLOPT_POST, POST_MODE);
+        
         curl_easy_setopt (curl.get (), CURLOPT_URL, [url=base_url] (CC * ext) mutable -> CC * { return (url+=ext).c_str (); } ("session"));
         curl_easy_setopt (curl.get (), CURLOPT_HTTPHEADER, hd_rest.get ());
         curl_easy_setopt (curl.get (), CURLOPT_POSTFIELDS, json_postfields.get ());

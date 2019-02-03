@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 const struct IGAuth * const init_igPtr (const char * fn) {
     struct IGAuth * IG = NULL;
@@ -35,6 +36,9 @@ struct IGAuth * file2ig (struct IGAuth * ig_ptr, const char * fn) {
         fscanf (f, "%s", buff[i]);
     }
     fclose (f);
+    /* Assert that fixed length strings are the correct size. */
+    assert (buff[2][39] != '\0' && buff[2][40] == '\0');
+    assert (buff[3][3]  != '\0' && buff[3][4]  == '\0');
     /* Allocate memory */
     ig_ptr                 = (struct IGAuth *) malloc (sizeof (struct IGAuth));
     ig_ptr->login.username = (const char *)    malloc (strlen ( buff[0] ) + 1);

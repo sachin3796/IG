@@ -16,8 +16,12 @@
 #include "cURL.hpp"
 #include "cJSON.hpp"
 
-/* Turn Debugging Mode On */
-#define DEBUG true
+/* Toggle HTTP Modes */
+enum {
+    VERBOSE_MODE = true,
+    POST_MODE    = true
+};
+
 /* Templates */
 template <class T1, class T2> struct _FUNC { typedef T1 (*functionPtr) (T2); };
 template <typename T> using fnPtr = typename _FUNC<void, T>::functionPtr;

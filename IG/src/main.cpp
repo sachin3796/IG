@@ -10,6 +10,7 @@
 
 #include "../inc/connect.hpp"
 
+
 int main (void) {
     
     static const std::unique_ptr<IG::IGConnect> streamPtr (new IG::IGConnect ("config_demo.txt"));

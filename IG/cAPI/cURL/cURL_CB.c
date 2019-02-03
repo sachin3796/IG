@@ -22,7 +22,7 @@ size_t curl_callback (void * content, size_t sz, size_t nmemb, struct MemoryBloc
     memblk->memory = tmp;
     memcpy (&(memblk->memory[memblk->size]), content, bufsize);
     memblk->size += bufsize;
-    memblk->memory[memblk->size] = 0;
+    memblk->memory[memblk->size] = '\0'; /* Null-Terminate the string */
     return bufsize;
 }
 
